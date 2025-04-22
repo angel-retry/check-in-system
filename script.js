@@ -3,8 +3,8 @@ let employees = JSON.parse(localStorage.getItem('employees')) || [];
 
 // 公司位置設定（以台北 101 為例）
 const COMPANY_LOCATION = {
-    latitude: 25.033964,
-    longitude: 121.564468
+    latitude: 23.962156,
+    longitude: 120.534493
 };
 const MAX_DISTANCE_METERS = 100; // 允許打卡的最大距離（公尺）
 
