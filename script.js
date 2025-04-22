@@ -204,6 +204,9 @@ async function checkPunchConditions() {
     while (retryCount <= maxRetries) {
         try {
             await checkGPSLocation();
+            if (!hasValidGPS) {
+                throw new Error('您不在公司允許打卡範圍內');
+            }
             return true;
         } catch (error) {
             if (error.message.includes('超時') && retryCount < maxRetries) {
