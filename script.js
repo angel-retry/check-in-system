@@ -1,6 +1,29 @@
 // 儲存員工資料
 let employees = JSON.parse(localStorage.getItem('employees')) || [];
 
+// 公司位置設定（以台北 101 為例）
+const COMPANY_LOCATION = {
+    latitude: 25.033964,
+    longitude: 121.564468
+};
+const MAX_DISTANCE_METERS = 100; // 允許打卡的最大距離（公尺）
+
+// 計算兩點之間的距離（使用 Haversine 公式）
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; // 地球半徑（公尺）
+    const φ1 = lat1 * Math.PI/180;
+    const φ2 = lat2 * Math.PI/180;
+    const Δφ = (lat2-lat1) * Math.PI/180;
+    const Δλ = (lon2-lon1) * Math.PI/180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c; // 返回公尺
+}
+
 // 載入畫面控制
 function showLoading() {
     document.getElementById('loading-overlay').classList.remove('hidden');
@@ -99,10 +122,20 @@ function updateGPSStatus(status, message) {
             if (longitudeDisplay) longitudeDisplay.textContent = '---';
             break;
         case 'success':
-            locationStatus.innerHTML = '<i class="fas fa-map-marker-alt"></i> 已獲取位置';
-            locationStatus.style.color = '#28a745';
+            const distance = calculateDistance(
+                message.latitude,
+                message.longitude,
+                COMPANY_LOCATION.latitude,
+                COMPANY_LOCATION.longitude
+            );
+            const isInRange = distance <= MAX_DISTANCE_METERS;
+            
+            locationStatus.innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + 
+                (isInRange ? '位於公司範圍內' : `距離公司 ${Math.round(distance)} 公尺，超出打卡範圍`);
+            locationStatus.style.color = isInRange ? '#28a745' : '#dc3545';
             if (latitudeDisplay) latitudeDisplay.textContent = message.latitude.toFixed(6);
             if (longitudeDisplay) longitudeDisplay.textContent = message.longitude.toFixed(6);
+            hasValidGPS = isInRange; // 更新 GPS 有效狀態
             break;
         case 'error':
             locationStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + message;
