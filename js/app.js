@@ -2,19 +2,28 @@ import { GPS_CONFIG } from './config.js';
 import { showLoading, hideLoading } from './utils.js';
 import { checkGPSLocation, isGPSValid } from './gps.js';
 import { getCurrentUser, registerUser, updateUserDisplay } from './auth.js';
+import { canPunch, doPunch, getPunchStatus } from './punch.js';
 import { 
     updateTimeDisplay, 
-    updatePunchButtonsState, 
+    setPunchButtonState,
     updatePunchMessage,
     setRegisterButtonLoading,
     setRefreshButtonSpinning
 } from './ui.js';
+import { showToast } from './toast.js';
 
 // 檢查打卡條件
-async function checkPunchConditions() {
+async function checkPunchConditions(type) {
     // 檢查用戶資料
     try {
         getCurrentUser();
+    } catch (error) {
+        throw error;
+    }
+
+    // 檢查打卡狀態
+    try {
+        canPunch(type);
     } catch (error) {
         throw error;
     }
@@ -39,19 +48,82 @@ async function checkPunchConditions() {
     }
 }
 
+// 更新打卡記錄顯示
+function updatePunchRecordDisplay() {
+    const status = getPunchStatus();
+    const clockInElement = document.getElementById('clockInTime');
+    const clockOutElement = document.getElementById('clockOutTime');
+    
+    if (clockInElement) {
+        clockInElement.textContent = status.lastClockIn || '--:--:--';
+        if (status.lastClockIn) {
+            clockInElement.style.color = '#28a745';  // 綠色
+        }
+    }
+    
+    if (clockOutElement) {
+        clockOutElement.textContent = status.lastClockOut || '--:--:--';
+        if (status.lastClockOut) {
+            clockOutElement.style.color = '#dc3545';  // 紅色
+        }
+    }
+}
+
+// 更新打卡按鈕狀態
+function updatePunchButtonsState() {
+    const status = getPunchStatus();
+    const clockInBtn = document.querySelector('.punch-btn[data-type="clockIn"]');
+    const clockOutBtn = document.querySelector('.punch-btn[data-type="clockOut"]');
+    const authMessage = document.getElementById('authMessage');
+
+    if (clockInBtn) {
+        setPunchButtonState(clockInBtn, !status.canClockIn, 
+            status.lastClockIn ? `已於 ${status.lastClockIn} 完成上班打卡` : '');
+    }
+    if (clockOutBtn) {
+        setPunchButtonState(clockOutBtn, !status.canClockOut,
+            status.lastClockOut ? `已於 ${status.lastClockOut} 完成下班打卡` : 
+            !status.canClockOut && !status.lastClockIn ? '請先進行上班打卡' : '');
+    }
+
+    // 更新認證訊息
+    if (authMessage) {
+        try {
+            getCurrentUser();
+            authMessage.innerText = '';
+        } catch (error) {
+            authMessage.innerText = error.message;
+            if (clockInBtn) setPunchButtonState(clockInBtn, true, error.message);
+            if (clockOutBtn) setPunchButtonState(clockOutBtn, true, error.message);
+        }
+    }
+
+    // 更新打卡記錄顯示
+    updatePunchRecordDisplay();
+}
+
 // 打卡功能
 export async function punchTime(type) {
     try {
         showLoading();
-        await checkPunchConditions();
+        await checkPunchConditions(type);
         
-        // 模擬打卡處理時間
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // 執行打卡
+        const timeString = doPunch(type);
+        const actionText = type === 'clockIn' ? '上班' : '下班';
+        const successMessage = `✅ ${actionText}打卡成功！\n時間：${timeString}`;
         
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('zh-TW');
+        // 更新打卡訊息
+        const messageElement = document.getElementById('punchMessage');
+        if (messageElement) {
+            messageElement.style.color = '#28a745';
+            messageElement.style.fontWeight = 'bold';
+            messageElement.style.fontSize = '1.2rem';
+            messageElement.innerText = successMessage;
+        }
         
-        updatePunchMessage(type, true, timeString);
+        // 更新按鈕狀態和打卡記錄
+        updatePunchButtonsState();
     } catch (error) {
         updatePunchMessage(type, false, error.message);
     } finally {
@@ -66,10 +138,8 @@ export async function refreshPageState() {
     
     try {
         await checkGPSLocation();
-        await checkPunchConditions();
-        updatePunchButtonsState(false);
+        updatePunchButtonsState();
     } catch (error) {
-        updatePunchButtonsState(true, error.message);
         console.error('更新狀態失敗：', error);
     } finally {
         hideLoading();

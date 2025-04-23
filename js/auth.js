@@ -47,8 +47,18 @@ export function updateUserDisplay() {
 
     try {
         const user = getCurrentUser();
-        userNameElement.textContent = user.name;
+        userNameElement.innerHTML = `
+            <span class="logged-in">
+                <i class="fas fa-user text-success me-2"></i>
+                <span class="fw-bold">${user.name}</span>
+            </span>
+        `;
     } catch (error) {
-        userNameElement.textContent = '尚未登入';
+        userNameElement.innerHTML = `
+            <span class="not-logged-in">
+                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                <span class="text-danger fw-bold">尚未登入</span>
+            </span>
+        `;
     }
 } 

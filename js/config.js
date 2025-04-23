@@ -21,5 +21,17 @@ export const COOKIE_CONFIG = {
 
 // localStorage 設定
 export const STORAGE_CONFIG = {
-    EMPLOYEES_KEY: 'employees'
+    EMPLOYEES_KEY: 'employees',
+    PUNCH_RECORDS_KEY: 'punchRecords'
+};
+
+// 打卡設定
+export const PUNCH_CONFIG = {
+    // 最短打卡間隔（毫秒）
+    MIN_PUNCH_INTERVAL: 60000, // 1分鐘
+    // 工作時間設定（24小時制）
+    WORK_HOURS: {
+        START: 9,  // 最早可打上班卡時間
+        END: 18    // 最晚應打下班卡時間
+    }
 }; 
