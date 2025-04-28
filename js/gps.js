@@ -82,6 +82,9 @@ function updateGPSStatus(status, message) {
             hasValidGPS = false;
             break;
     }
+    if (typeof window.updatePunchButtonsState === 'function') {
+        window.updatePunchButtonsState();
+    }
 }
 
 // 檢查 GPS 位置
