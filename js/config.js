@@ -1,5 +1,7 @@
 // 公司位置設定
 export const COMPANY_LOCATION = {
+    // latitude: 23.917704,
+    // longitude: 120.606963
     latitude: 23.962156,
     longitude: 120.534493
 };
@@ -31,7 +33,9 @@ export const PUNCH_CONFIG = {
     MIN_PUNCH_INTERVAL: 60000, // 1分鐘
     // 工作時間設定（24小時制）
     WORK_HOURS: {
-        START: 9,  // 最早可打上班卡時間
-        END: 18    // 最晚應打下班卡時間
+        START: 8,  // 最早可打上班卡時間
+        END: 18,   // 最晚可打下班卡時間
+        CLOCK_IN_END: 12,  // 最晚可打上班卡時間
+        CLOCK_OUT_START: 8 // 最早可打下班卡時間
     }
 }; 

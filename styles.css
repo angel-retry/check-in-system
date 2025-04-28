@@ -145,6 +145,16 @@
   opacity: 0.6;
 }
 
+.punch-btn:disabled:hover {
+  background-color: inherit;
+}
+
+.location-warning {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
 #punchMessage {
   font-size: 1.2rem;
   margin-top: 1rem;
@@ -203,4 +213,28 @@
 
 .spinning {
   animation: spin 1s linear infinite;
+}
+
+.error-message {
+  color: #dc3545;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+#authMessage {
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+#authMessage i {
+  margin-right: 0.5rem;
+}
+
+.location-status.text-danger {
+  color: #dc3545 !important;
+  font-weight: bold;
+}
+
+.location-status i {
+  margin-right: 0.5rem;
 }
